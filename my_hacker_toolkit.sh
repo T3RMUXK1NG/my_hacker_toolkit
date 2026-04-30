@@ -3,6 +3,9 @@
 # रंग और स्टाइल टेम्पलेट
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RESET='\033[0m'; BOLD='\033[1m'
 
+TOOLKIT_VERSION="0.4"
+TOOLKIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 show_banner() {
     echo -e "${CYAN}"
     echo "███████╗██╗  ██╗ █████╗  ██████╗██╗  ██╗███████╗██████╗     ████████╗ ██████╗  ██████╗ ██╗  ██╗██╗     ██╗  ██╗██╗████████╗";
@@ -11,8 +14,18 @@ show_banner() {
     echo " ███╔╝  ██╔══██║██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗       ██║   ██║   ██║██║   ██║██╔══██║██║     ██╔═██╗ ██║   ██║   ";
     echo "███████╗██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║       ██║   ╚██████╔╝╚██████╔╝██║  ██║███████╗██║  ██╗██║   ██║   ";
     echo "╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝       ╚═╝    ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝   ";
-    echo -e "${GREEN}    Version: 0.1    ${RESET}"
+    echo -e "${GREEN}    Version: $TOOLKIT_VERSION | By: T3rmuxk1ng${RESET}"
+    echo -e "${YELLOW}    YouTube: https://youtube.com/@T3rmuxk1ng${RESET}"
 }
+
+# ====== [LOGGING] ======
+log_action() {
+    local log_dir="$TOOLKIT_DIR/logs"
+    mkdir -p "$log_dir"
+    local log_file="$log_dir/toolkit_$(date +%Y%m%d).log"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$log_file"
+}
+
 generate_html_report() {
     read -p "स्कैन करने के लिए डायरेक्टरी (default: \$HOME): " target
     target="${target:-$HOME}"
@@ -44,6 +57,7 @@ generate_html_report() {
     echo "</ul>
     </body></html>" >> "$out"
     echo -e "${CYAN}रिपोर्ट बन गई: $out${RESET}"
+    log_action "HTML report generated for $target"
 }
 monitor_directory() {
     echo "मॉनिटर के लिए डायरेक्टरी (default: \$HOME):"
@@ -98,6 +112,7 @@ network_info() {
     else
         netstat -tulpan
     fi
+    log_action "Network info displayed"
 }
 ping_scan() {
     read -p "Host/IP डालें (default: 8.8.8.8): " target
@@ -109,6 +124,7 @@ ping_scan() {
     else
         echo -e "${RED}नेटवर्क fail/timeout या unreachable${RESET}"
     fi
+    log_action "Ping scan on $target"
 }
 compare_files_folders() {
     echo -e "${CYAN}फाइल/FOLDER तुलना मॉड्यूल${RESET}"
@@ -198,9 +214,9 @@ set_theme() {
 load_lang() {
     export TOOL_LANG="${TOOL_LANG:-hi}"
     if [[ "$TOOL_LANG" == "en" ]]; then
-        source "$HOME/my_hacker_toolkit/lang/en.lang"
+        source "$TOOLKIT_DIR/lang/en.lang"
     else
-        source "$HOME/my_hacker_toolkit/lang/hi.lang"
+        source "$TOOLKIT_DIR/lang/hi.lang"
     fi
 }
 
@@ -216,33 +232,35 @@ change_lang() {
     log_action "Language changed"
 }
 
-# शुरुआत में लोड करें:
-load_lang
 check_update() {
     echo -e "${CYAN}टूलकिट वर्शन: $TOOLKIT_VERSION${RESET}"
-    echo -e "CHANGELOG:\n$(head -5 $HOME/my_hacker_toolkit/CHANGELOG.md)"
-    # रिमोट ล่าสุด वर्शन खोजें (GitHub)
-    git fetch origin main >/dev/null 2>&1
-    localver=$(git rev-parse HEAD)
-    remotever=$(git rev-parse origin/main)
-    if [[ "$localver" != "$remotever" ]]; then
-        echo -e "${YELLOW}अपडेट उपलब्ध है!${RESET}"
-        echo "लेटेस्ट प्राप्त करने के लिए यह कमांड चलाएँ:"
-        echo -e "${GREEN}git pull origin main${RESET}"
+    echo -e "CHANGELOG:\n$(head -5 "$TOOLKIT_DIR/CHANGELOG.md")"
+    # रिमोट लेटेस्ट वर्शन खोजें (GitHub)
+    if [[ -d "$TOOLKIT_DIR/.git" ]]; then
+        git -C "$TOOLKIT_DIR" fetch origin main >/dev/null 2>&1
+        localver=$(git -C "$TOOLKIT_DIR" rev-parse HEAD)
+        remotever=$(git -C "$TOOLKIT_DIR" rev-parse origin/main)
+        if [[ "$localver" != "$remotever" ]]; then
+            echo -e "${YELLOW}अपडेट उपलब्ध है!${RESET}"
+            echo "लेटेस्ट प्राप्त करने के लिए यह कमांड चलाएँ:"
+            echo -e "${GREEN}git pull origin main${RESET}"
+        else
+            echo -e "${GREEN}आप लेटेस्ट वर्शन चला रहे हैं!${RESET}"
+        fi
     else
-        echo -e "${GREEN}आप लेटेस्ट वर्शन चला रहे हैं!${RESET}"
+        echo -e "${YELLOW}Git repo not found. Clone from GitHub for updates.${RESET}"
     fi
     log_action "Version check/Auto-update"
 }
 auto_backup() {
     local backup_name="toolkit_backup_$(date +%Y%m%d_%H%M%S).zip"
-    cd "$HOME"
-    zip -r "$backup_name" my_hacker_toolkit > /dev/null
+    cd "$TOOLKIT_DIR/.."
+    zip -r "$backup_name" "$(basename "$TOOLKIT_DIR")" > /dev/null 2>&1
     if [[ $? -eq 0 ]]; then
-        echo -e "${GREEN}बैकअप तैयार: $HOME/$backup_name${RESET}"
+        echo -e "${GREEN}बैकअप तैयार: $(pwd)/$backup_name${RESET}"
         log_action "Backup created: $backup_name"
     else
-        echo -e "${RED}बैकअप फेल!${RESET}"
+        echo -e "${RED}बैकअप फेल! (zip not installed?)${RESET}"
     fi
 }
 restore_backup() {
@@ -251,78 +269,83 @@ restore_backup() {
         echo -e "${RED}बैकअप फाइल नहीं मिली!${RESET}"
         return
     fi
-    unzip -o "$backup_zip" -d "$HOME" && \
+    unzip -o "$backup_zip" -d "$TOOLKIT_DIR/.." && \
     echo -e "${GREEN}Restore successful! अब my_hacker_toolkit ताजा हुआ।${RESET}"
     log_action "Restore from backup: $backup_zip"
 }
 
 main_menu() {
-    echo -e "${YELLOW}[1] हैलो वर्ल्ड टूल"
-    echo -e "${YELLOW}[2] डायरेक्टरी स्कैन + HTML रिपोर्ट${RESET}"
-    echo -e "${YELLOW}[3] डायरेक्टरी मॉनिटरिंग (लाइव)${RESET}"
-    echo -e "${YELLOW}[4] नेटवर्क इंफो${RESET}"
-    echo -e "${YELLOW}[5] पिंग स्कैन और इंटरनेट टेस्ट${RESET}"
-    echo -e "${YELLOW}[6] फाइल/फोल्डर तुलना (Diff)${RESET}"
-echo -e "${YELLOW}[7] डुप्लिकेट फाइल फाइंडर${RESET}"
-echo -e "${YELLOW}[8] फाइल एन्क्रिप्शन करें${RESET}"
-echo -e "${YELLOW}[9] फाइल डिक्रिप्शन करें${RESET}"
-echo -e "${YELLOW}[10] रंग-थीम बदलें${RESET}"
-echo -e "${YELLOW}[11] भाषा बदलें (Language)${RESET}"
-echo -e "${YELLOW}[12] वर्शन चेक/अपडेट${RESET}"
-echo -e "${YELLOW}[13] Toolkit का Backup (ZIP export) करें${RESET}"
-echo -e "${YELLOW}[14] Backup से Restore करें${RESET}"
-echo -e "[0] बाहर निकलें${RESET}"
+    echo -e "${YELLOW}[1]  हैलो वर्ल्ड टूल${RESET}"
+    echo -e "${YELLOW}[2]  डायरेक्टरी स्कैन + HTML रिपोर्ट${RESET}"
+    echo -e "${YELLOW}[3]  डायरेक्टरी मॉनिटरिंग (लाइव)${RESET}"
+    echo -e "${YELLOW}[4]  नेटवर्क इंफो${RESET}"
+    echo -e "${YELLOW}[5]  पिंग स्कैन और इंटरनेट टेस्ट${RESET}"
+    echo -e "${YELLOW}[6]  फाइल/फोल्डर तुलना (Diff)${RESET}"
+    echo -e "${YELLOW}[7]  डुप्लिकेट फाइल फाइंडर${RESET}"
+    echo -e "${YELLOW}[8]  फाइल एन्क्रिप्शन करें${RESET}"
+    echo -e "${YELLOW}[9]  फाइल डिक्रिप्शन करें${RESET}"
+    echo -e "${YELLOW}[10] रंग-थीम बदलें${RESET}"
+    echo -e "${YELLOW}[11] भाषा बदलें (Language)${RESET}"
+    echo -e "${YELLOW}[12] वर्शन चेक/अपडेट${RESET}"
+    echo -e "${YELLOW}[13] Toolkit का Backup (ZIP export) करें${RESET}"
+    echo -e "${YELLOW}[14] Backup से Restore करें${RESET}"
+    echo -e "${RED}[0]  बाहर निकलें${RESET}"
     read -p "आपका विकल्प: " ch
     case $ch in
         1)
             echo -e "${GREEN}~ हेलो वर्ल्ड, टूलकिट शुरू!${RESET}"
+            log_action "Hello World tool"
             ;;
         2)
-    generate_html_report
-    read -p "जारी रखने के लिए Enter..." ;;
+            generate_html_report
+            read -p "जारी रखने के लिए Enter..." ;;
         3)
-    monitor_directory
-    read -p "जारी रखने के लिए Enter..." ;;
+            monitor_directory
+            read -p "जारी रखने के लिए Enter..." ;;
         4)
-    network_info
-    read -p "जारी रखने के लिए Enter..." ;;
-5)
-    ping_scan
-    read -p "जारी रखने के लिए Enter..." ;;
-6)
-    compare_files_folders
-    read -p "जारी रखने के लिए Enter..." ;;
-7)
-    find_duplicates
-    read -p "जारी रखने के लिए Enter..." ;;
-8)
-    encrypt_file
-    read -p "जारी रखने के लिए Enter दबाएं..." ;;
-9)
-    decrypt_file
-    read -p "जारी रखने के लिए Enter दबाएं..." ;;
-10)
-    set_theme
-    read -p "जारी रखने के लिए Enter..." ;;
-11)
-    change_lang
-    read -p "जारी रखने के लिए Enter..." ;;
-12)
-    check_update
-    read -p "Enter दबाएँ..." ;;
-13)
-    auto_backup
-    read -p "जारी रखने के लिए Enter..." ;;
-14)
-    restore_backup
-    read -p "जारी रखने के लिए Enter..." ;;
-
-
-        0) exit ;;
-        *) echo "गलत चयन!" ;;
+            network_info
+            read -p "जारी रखने के लिए Enter..." ;;
+        5)
+            ping_scan
+            read -p "जारी रखने के लिए Enter..." ;;
+        6)
+            compare_files_folders
+            read -p "जारी रखने के लिए Enter..." ;;
+        7)
+            find_duplicates
+            read -p "जारी रखने के लिए Enter..." ;;
+        8)
+            encrypt_file
+            read -p "जारी रखने के लिए Enter दबाएं..." ;;
+        9)
+            decrypt_file
+            read -p "जारी रखने के लिए Enter दबाएं..." ;;
+        10)
+            set_theme
+            read -p "जारी रखने के लिए Enter..." ;;
+        11)
+            change_lang
+            read -p "जारी रखने के लिए Enter..." ;;
+        12)
+            check_update
+            read -p "Enter दबाएँ..." ;;
+        13)
+            auto_backup
+            read -p "जारी रखने के लिए Enter..." ;;
+        14)
+            restore_backup
+            read -p "जारी रखने के लिए Enter..." ;;
+        0)
+            echo -e "${GREEN}बाहर निकल रहे हैं... Goodbye!${RESET}"
+            log_action "Toolkit exited"
+            exit 0 ;;
+        *)
+            echo -e "${RED}गलत चयन!${RESET}" ;;
     esac
 }
-log_action "Ping scan on $target – result: $?"
+
+# शुरुआत में लोड करें:
+load_lang
 
 clear
 show_banner
