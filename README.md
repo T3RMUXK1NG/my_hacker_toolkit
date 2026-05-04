@@ -5,10 +5,10 @@
 **An all-in-one, Hindi-friendly hacker/system autopilot Bash toolkit for Termux & Linux**
 
 [![Language](https://img.shields.io/badge/Language-Bash-4EAA25?logo=gnubash)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/Version-0.4-red)](https://github.com/rajsaraswati-jatavv/my_hacker_toolkit/releases)
+[![Version](https://img.shields.io/badge/Version-0.4-red)](https://github.com/T3RMUXK1NG/my_hacker_toolkit/releases)
 [![OS](https://img.shields.io/badge/OS-Linux%20%7C%20Termux-blue?logo=linux)](https://www.linux.org)
 [![YouTube](https://img.shields.io/badge/YouTube-T3rmuxk1ng-red?logo=youtube)](https://youtube.com/@T3rmuxk1ng)
-[![Hindi](https://img.shields.io/badge/Lang-हिंदी%20%7C%20English-orange)](https://github.com/rajsaraswati-jatavv/my_hacker_toolkit)
+[![Hindi](https://img.shields.io/badge/Lang-हिंदी%20%7C%20English-orange)](https://github.com/T3RMUXK1NG/my_hacker_toolkit)
 
 *Built with 💚 by [T3rmuxk1ng](https://youtube.com/@T3rmuxk1ng)*
 
@@ -58,7 +58,7 @@ Subscribe for hacking tool tutorials, Termux walkthroughs, and exclusive tool de
 ### Termux (Android)
 ```bash
 pkg install bash git openssl zip
-git clone https://github.com/rajsaraswati-jatavv/my_hacker_toolkit.git
+git clone https://github.com/T3RMUXK1NG/my_hacker_toolkit.git
 cd my_hacker_toolkit
 chmod +x my_hacker_toolkit.sh
 ./my_hacker_toolkit.sh
@@ -66,7 +66,7 @@ chmod +x my_hacker_toolkit.sh
 
 ### Linux
 ```bash
-git clone https://github.com/rajsaraswati-jatavv/my_hacker_toolkit.git
+git clone https://github.com/T3RMUXK1NG/my_hacker_toolkit.git
 cd my_hacker_toolkit
 chmod +x my_hacker_toolkit.sh
 ./my_hacker_toolkit.sh
